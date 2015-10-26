@@ -30,7 +30,7 @@
     },
     "autoload": {
         "psr-4": {
-            "AbuseIO\\FindContact\\ByIp": "src/"
+            "AbuseIO\\FindContact\\": "src/"
         }
     }
 }
