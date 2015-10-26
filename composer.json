@@ -1,0 +1,36 @@
+{
+    "name": "abuseio/findcontact-byip-nipap",
+    "description": "AbuseIO module for IP lookups against NIPAP.",
+    "version": "1.0.0-dev",
+    "keywords": ["laravel", "abuseio", "parser", "spamcop"],
+    "homepage": "http://abuse.io",
+    "type": "library",
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "AbuseIO Foundation",
+            "email": "dev@abuse.io",
+            "homepage": "http://abuse.io",
+            "role": "Lead"
+        }
+    ],
+    "support": {
+        "email": "dev@abuse.io",
+        "issues": "https://github.com/AbuseIO/findcontact-byip-nipap/issues",
+        "irc": "irc://irc.freenode.net/abuseio",
+        "source": "https://github.com/AbuseIO/findcontact-byip-nipap",
+        "docs": "https://abuse.io/resources/documentation/"
+    },
+    "require": {
+        "php": ">=5.4.0",
+    },
+    "conflict": {
+        "abuseio/findcontact-byip-custom": "*",
+        "abuseio/findcontact-byip-phpipam": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "AbuseIO\\FindContact\\ByIp": "src/"
+        }
+    }
+}
