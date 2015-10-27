@@ -1,0 +1,106 @@
+<?php
+
+namespace AbuseIO\Findcontact;
+
+use AbuseIO\Jobs\FindContact;
+use Zend\XmlRpc\Client as RpcClient;
+use AbuseIO\Models\Contact;
+
+class Nipap
+{
+    public function doQuery($method, $search)
+    {
+        $username = 'admin';
+        $password = 'admin';
+        $RpcClient = new RpcClient('http://172.17.100.201:1337/XMLRPC');
+        $httpClient = $RpcClient->getHttpClient();
+        $httpClient->setAuth($username, $password);
+
+        return $RpcClient->call($method, $search);
+    }
+
+    public function getContactByIp($ip)
+    {
+        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) {
+            $netmask = 128;
+        } elseif (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
+            $netmask = 32;
+        } else {
+            return false;
+        }
+
+        // Start the query for the IP and gather results
+        $result = $this->doQuery(
+            'search_prefix',
+            [
+                [
+                    'auth' => [
+                        'authoritative_source' => 'nipap'
+                    ],
+                    'query' => [
+                        'operator' => 'equals',
+                        'val1' => 'prefix',
+                        'val2' => "{$ip}/{$netmask}"
+                    ],
+                    'search_options' => [
+                        'include_all_parents' => true,
+                    ],
+                ]
+            ]
+        );
+
+        /*
+         * Walk results in reverse to get the most specific match to use. (if host has no contact, then move up
+         * every prefix until something is found. NIPAP does not inherit AVPS objects which we should ask them to do
+         */
+
+        if (is_array($result['result'])) {
+            $resultRev = array_reverse($result['result']);
+            $firstContact = false;
+
+            foreach ($resultRev as $key => $resultRevSet) {
+                if (!empty($resultRevSet['avps']['AbuseIO_Name']) &&
+                    !empty($resultRevSet['avps']['AbuseIO_Contact']) &&
+                    !empty($resultRevSet['avps']['AbuseIO_AutoNotify']) &&
+                    !empty($resultRevSet['customer_id'])
+                ) {
+                    $contact = new Contact;
+                    $contact->reference     = $resultRevSet['customer_id'];
+                    $contact->name          = $resultRevSet['avps']['AbuseIO_Name'];
+                    $contact->enabled       = empty($resultRevSet['avps']['AbuseIO_Disabled']) ? true : false;
+                    $contact->auto_notify   = $resultRevSet['avps']['AbuseIO_AutoNotify'];
+                    $contact->email         = $resultRevSet['avps']['AbuseIO_Contact'];
+                    $contact->rpc_host      = empty(
+                    $resultRevSet['avps']['AbuseIO_RPCHost']) ? false : $resultRevSet['avps']['AbuseIO_RPCHost'];
+                    $contact->rpc_key       = empty(
+                    $resultRevSet['avps']['AbuseIO_RPCKey']) ? false : $resultRevSet['avps']['AbuseIO_RPCKey'];
+
+                    return $contact;
+                }
+
+                /*
+                 * Save the first found customer ID in case there is no AVPS found at all
+                 */
+                if (!empty($resultRevSet['customer_id']) &&
+                    empty($firstContact)
+                ) {
+                    $firstContact = $resultRevSet['customer_id'];
+                }
+
+            }
+
+            /*
+             * At this point we never found the required AVPS objects, but we did find a customer ID (reference) so
+             * we can fallback to a lookup onto the byID section of FindContact.
+             */
+            if (!empty($firstContact)) {
+                $contact = FindContact::byId($firstContact);
+                if ($contact->name !== 'UNDEF') {
+                    return $contact;
+                }
+            }
+        }
+
+        return false;
+    }
+}
