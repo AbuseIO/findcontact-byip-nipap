@@ -22,7 +22,8 @@
         "docs": "https://abuse.io/resources/documentation/"
     },
     "require": {
-        "php": ">=5.4.0"
+        "php": ">=5.4.0",
+        "zendframework/zend-xmlrpc": "2.5.*"
     },
     "autoload": {
         "psr-4": {
