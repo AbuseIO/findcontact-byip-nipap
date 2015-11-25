@@ -65,6 +65,13 @@ class Nipap
                     !empty($resultRevSet['customer_id'])
                 ) {
                     $contact = new Contact;
+
+                    if (!empty($resultRevSet['avps']['AbuseIO_AccountId'])) {
+                        $contact->account_id = $resultRevSet['avps']['AbuseIO_AccountId'];
+                    } else {
+                        $contact->account_id = 1;
+                    }
+
                     $contact->reference     = $resultRevSet['customer_id'];
                     $contact->name          = $resultRevSet['avps']['AbuseIO_Name'];
                     $contact->enabled       = empty($resultRevSet['avps']['AbuseIO_Disabled']) ? true : false;
