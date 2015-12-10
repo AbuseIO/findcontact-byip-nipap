@@ -10,13 +10,19 @@ class Nipap
 {
     public function doQuery($method, $search)
     {
-        $username = 'admin';
-        $password = 'admin';
-        $RpcClient = new RpcClient('http://172.17.100.201:1337/XMLRPC');
-        $httpClient = $RpcClient->getHttpClient();
-        $httpClient->setAuth($username, $password);
+        try {
+            $username = 'admin';
+            $password = 'admin';
+            $RpcClient = new RpcClient('http://172.17.100.201:1337/XMLRPC');
+            $httpClient = $RpcClient->getHttpClient();
+            $httpClient->setAuth($username, $password);
 
-        return $RpcClient->call($method, $search);
+            $return = $RpcClient->call($method, $search);
+        } catch (\Exception $e) {
+            $return = false;
+        }
+
+        return $return;
     }
 
     public function getContactByIp($ip)
@@ -77,9 +83,9 @@ class Nipap
                     $contact->enabled       = empty($resultRevSet['avps']['AbuseIO_Disabled']) ? true : false;
                     $contact->auto_notify   = $resultRevSet['avps']['AbuseIO_AutoNotify'];
                     $contact->email         = $resultRevSet['avps']['AbuseIO_Contact'];
-                    $contact->rpc_host      = empty(
+                    $contact->api_host      = empty(
                     $resultRevSet['avps']['AbuseIO_RPCHost']) ? false : $resultRevSet['avps']['AbuseIO_RPCHost'];
-                    $contact->rpc_key       = empty(
+                    $contact->api_key       = empty(
                     $resultRevSet['avps']['AbuseIO_RPCKey']) ? false : $resultRevSet['avps']['AbuseIO_RPCKey'];
 
                     return $contact;
