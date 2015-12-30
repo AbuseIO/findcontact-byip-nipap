@@ -6,8 +6,20 @@ use AbuseIO\Jobs\FindContact;
 use Zend\XmlRpc\Client as RpcClient;
 use AbuseIO\Models\Contact;
 
+/**
+ * Class Nipap
+ * @package AbuseIO\Findcontact
+ */
 class Nipap
 {
+
+    /**
+     * Does a query to the RPC host
+     *
+     * @param string $method
+     * @param array $search
+     * @return bool|array
+     */
     public function doQuery($method, $search)
     {
         try {
@@ -25,6 +37,12 @@ class Nipap
         return $return;
     }
 
+    /**
+     * NIPAP implementation for ByIP method
+     *
+     * @param string $ip
+     * @return Contact|bool|object
+     */
     public function getContactByIp($ip)
     {
         if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) {
