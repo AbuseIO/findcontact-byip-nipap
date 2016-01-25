@@ -1,7 +1,7 @@
 {
     "name": "abuseio/findcontact-nipap",
     "description": "AbuseIO module for IP lookups against NIPAP.",
-    "version": "1.0.0-dev",
+    "version": "1.0.1-dev",
     "keywords": ["laravel", "abuseio", "findcontact", "nipap"],
     "homepage": "http://abuse.io",
     "type": "library",
